@@ -1,0 +1,144 @@
+<html><head><base href="https://websim.ai" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucky Time Tracker</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f4f4f4;
+  }
+  .container {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  h1 {
+    color: #2c3e50;
+    text-align: center;
+  }
+  .time-tracker, .lucky-number {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #ecf0f1;
+    border-radius: 5px;
+  }
+  #luckyNumberDisplay {
+    font-size: 24px;
+    font-weight: bold;
+    color: #e74c3c;
+    text-align: center;
+  }
+  button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #2980b9;
+  }
+  .hidden {
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Lucky Time Tracker</h1>
+  
+  <div class="time-tracker">
+    <h2>Time Tracker</h2>
+    <p>First Visit: <span id="firstVisit"></span></p>
+    <p>Last Visit: <span id="lastVisit"></span></p>
+    <p>Total Time Spent: <span id="totalTime"></span></p>
+  </div>
+  
+  <div class="lucky-number">
+    <h2>Your Lucky Number</h2>
+    <p id="luckyNumberDisplay"></p>
+    <button id="revealButton">Reveal My Lucky Number</button>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'luckyTimeTracker';
+
+function getStoredData() {
+  const storedData = localStorage.getItem(STORAGE_KEY);
+  return storedData ? JSON.parse(storedData) : null;
+}
+
+function setStoredData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function updateTimeDisplay() {
+  const data = getStoredData();
+  if (data) {
+    document.getElementById('firstVisit').textContent = new Date(data.firstVisit).toLocaleString();
+    document.getElementById('lastVisit').textContent = new Date().toLocaleString();
+    
+    const totalSeconds = Math.floor((new Date() - new Date(data.firstVisit)) / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    document.getElementById('totalTime').textContent = `${hours} hours and ${minutes} minutes`;
+  }
+}
+
+function generateLuckyNumber() {
+  return Math.floor(Math.random() * 9999) + 1;
+}
+
+document.getElementById('revealButton').addEventListener('click', function() {
+  const data = getStoredData();
+  if (data && data.luckyNumber) {
+    document.getElementById('luckyNumberDisplay').textContent = data.luckyNumber;
+  } else {
+    const luckyNumber = generateLuckyNumber();
+    document.getElementById('luckyNumberDisplay').textContent = luckyNumber;
+    setStoredData({
+      ...data,
+      luckyNumber: luckyNumber
+    });
+  }
+  this.classList.add('hidden');
+});
+
+function initializePage() {
+  let data = getStoredData();
+  if (!data) {
+    data = {
+      firstVisit: new Date().toISOString(),
+      visits: 1
+    };
+    setStoredData(data);
+  } else {
+    data.visits += 1;
+    setStoredData(data);
+  }
+  
+  updateTimeDisplay();
+  
+  if (data.luckyNumber) {
+    document.getElementById('luckyNumberDisplay').textContent = data.luckyNumber;
+    document.getElementById('revealButton').classList.add('hidden');
+  }
+}
+
+initializePage();
+setInterval(updateTimeDisplay, 60000); // Update time every minute
+</script>
+</body>
+</html>
